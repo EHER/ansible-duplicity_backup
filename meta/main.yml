@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  author: Alexandre Eher
+  description: A role to install, configure and schedule backups via duplicity and duplicity_backup script.
+  license: BSD
+  min_ansible_version: 1.5
+  platforms:
+  - name: Ubuntu
+    versions:
+      - all
+  categories:
+  - development
+dependencies: []

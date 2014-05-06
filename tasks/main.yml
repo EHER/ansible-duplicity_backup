@@ -1,0 +1,21 @@
+---
+- name: Install dependencies
+  apt: pkg={{ item }} state=present
+  with_items:
+    - duplicity
+    - s3cmd
+    - python-boto
+
+- name: Download duplicity-backup script from Github
+  get_url: url=https://raw.githubusercontent.com/zertrin/duplicity-backup/master/duplicity-backup.sh dest=/usr/local/bin/duplicity-backup.sh mode=0700
+
+- name: Setup s3cmd
+  template: src=dot-s3cfg.j2 dest=/root/.s3cfg mode=0600
+
+- name: Setup duplicity-backup configurations
+  template: src=duplicity-backup.conf.j2 dest=/etc/duplicity-backup.conf mode=0600
+
+- name: Schedulle Cron to runs backup
+  cron: name="eher_duplicity_backup" job="/usr/local/bin/duplicity-backup.sh -c /etc/duplicity-backup.conf -b" special_time={{ eher_duplicity_backup_time|default("daily") }}
+
+

@@ -1,0 +1,135 @@
+#!/bin/bash
+#
+# Copyright (c) 2008-2010 Damon Timm.
+# Copyright (c) 2010 Mario Santagiuliana.
+# Copyright (c) 2012-2013 Marc Gallet.
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# MORE ABOUT THIS SCRIPT AVAILABLE IN THE README AND AT:
+#
+# http://zertrin.org/projects/duplicity-backup/ (for this version)
+# http://damontimm.com/code/dt-s3-backup (for the original programi by Damon Timm)
+#
+# Latest code available at:
+# http://github.com/zertrin/duplicity-backup
+#
+# List of contributors:
+# https://github.com/zertrin/duplicity-backup/graphs/contributors
+#
+# ---------------------------------------------------------------------------- #
+
+# #############################################
+# #       DUPLICITY-BACKUP CONFIG FILE        #
+# #############################################
+
+# AMAZON S3 INFORMATION
+AWS_ACCESS_KEY_ID="{{ eher_duplicity_backup_aws_key }}"
+AWS_SECRET_ACCESS_KEY="{{ eher_duplicity_backup_aws_secret }}"
+ENCRYPTION="{{ "yes" if eher_duplicity_backup_encryption else "no" }}"
+PASSPHRASE="{{ eher_duplicity_backup_passphrase|default(generated_passphrase) }}"
+ROOT="{{ eher_duplicity_backup_root|default("/") }}"
+DEST="{{ eher_duplicity_backup_destination }}"
+FTP_PASSWORD="{{ eher_duplicity_backup_ftp_password|default("") }}"
+INCLIST=(
+{% for inclist in eher_duplicity_backup_include_list|default([]) %}
+        "{{ inclist }}"
+{% endfor %}
+)
+EXCLIST=(
+{% for exclist in eher_duplicity_backup_exclude_list|default([]) %}
+        "{{ exclist }}"
+{% endfor %}
+)
+LOGDIR="/var/log/duplicity/"
+LOG_FILE="duplicity-`date +%Y-%m-%d_%H-%M`.txt"
+REMOVE_LOGS_OLDER_THAN='30'
+VERBOSITY="-v3"
+
+
+# EXCLUDE DEVICE FILES
+# Exclude all device files. This can be useful for security/permissions reasons 
+# or if device files are not handled correctly.
+# 
+# EXDEVICEFILES=1
+
+
+# STATIC BACKUP OPTIONS
+# Here you can define the static backup options that you want to run with
+# duplicity. Reference is the manpage of duplicity (available at
+# http://duplicity.nongnu.org/duplicity.1.html for example)
+# Useful examples are `--full-if-older-than` option and (for those using
+# Amazon S3 in Europe) `--s3-use-new-style` and `--s3-european-buckets` options
+# Be sure to separate your options with appropriate spacing.
+STATIC_OPTIONS="--full-if-older-than 14D --s3-use-new-style"
+
+# FULL BACKUP & REMOVE OLDER THAN SETTINGS
+# Because duplicity will continue to add to each backup as you go,
+# it will eventually create a very large set of files.  Also, incremental
+# backups leave room for problems in the chain, so doing a "full"
+# backup every so often is not a bad idea.
+#
+# You can remove older than a specific time period:
+#CLEAN_UP_TYPE="remove-older-than"
+#CLEAN_UP_VARIABLE="31D"
+#
+# Or, If you would rather keep a certain (n) number of full backups (rather
+# than removing the files based on their age), you can use what I use:
+CLEAN_UP_TYPE="remove-all-but-n-full"
+CLEAN_UP_VARIABLE="4"
+
+# The third option is to skip cleanup altogether, by:
+# CLEAN_UP_TYPE="none"
+#
+# In combination with "remove-older-than" clean-up type, you may want
+# to keep only the full backups older than (n) number backup sets. For example, 
+# let's say you set to CLEAN_UP_TYPE="remove-older-than", CLEAN_UP_VARIABLE
+# to "6M" (six months), STATIC_OPTIONS to "--full-if-older-than 7D"
+# (a full backup every 7 days), and you execute duplicity-backup once a day. 
+# After six months you'll have 25 full backups, each with daily incrementals 
+# in between. Perhaps you're keeping the backups past 1 month "just in case", 
+# and so the older incrementals are overkill – weekly full backups beyond
+# one month backward would suffice. In this case you can set 
+# "REMOVE_INCREMENTALS_OLDER_THAN to, say, "4" which will delete the 
+# incrementals for backup sets beyond the four most recent, keeping 
+# only the full weekly backups for those backup sets. The incrementals
+# for the four most recent backup sets remain untouched.
+#REMOVE_INCREMENTALS_OLDER_THAN="4"
+
+# EMAIL ALERT (*thanks: rmarescu*)
+# Provide an email address to receive the logfile by email. If no email
+# address is provided, no alert will be sent.
+# You can set a custom from email address and a custom subject (both optionally)
+# If no value is provided for the subject, the following value will be
+# used by default: "duplicity-backup Alert ${LOG_FILE}"
+# MTA used: mailx
+#EMAIL="admin@example.com"
+EMAIL_TO=
+EMAIL_FROM=
+EMAIL_SUBJECT=
+
+# command to use to send mail
+MAIL="mailx"     # default command for Linux mail
+#MAIL="mail"     # for CentOS, if "mailx" fails try this one
+#MAIL="ssmtp"
+#MAIL="sendmail"
+#MAIL="msmtp"
+
+# TROUBLESHOOTING: If you are having any problems running this script it is
+# helpful to see the command output that is being generated to determine if the
+# script is causing a problem or if it is an issue with duplicity (or your
+# setup).  Simply  uncomment the ECHO line below and the commands will be
+# printed to the logfile.  This way, you can see if the problem is with the
+# script or with duplicity.
+#ECHO=$(which echo)
