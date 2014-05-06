@@ -18,29 +18,35 @@ Just add a role with a list of paths to backup and destinations details (s3 on t
 ```yml
 ---
 # site.yml
-roles:
-  - role: EHER.duplicity_backup
-    eher_duplicity_backup_include_list: [ "/home/" ]
-    eher_duplicity_backup_destination: "s3://s3.amazonaws.com/my_backup_bucket/"
-    eher_duplicity_backup_aws_key: "{{ backup_aws_key }}"
-    eher_duplicity_backup_aws_secret: "{{ backup_aws_secret }}"
+- hosts: duplicity_backup
+  sudo: yes
+  tags: duplicity_backup
+  roles:
+    - role: EHER.duplicity_backup
+      eher_duplicity_backup_include_list: [ "/home/" ]
+      eher_duplicity_backup_destination: "s3://s3.amazonaws.com/my_backup_bucket/"
+      eher_duplicity_backup_aws_key: "{{ backup_aws_key }}"
+      eher_duplicity_backup_aws_secret: "{{ backup_aws_secret }}"
 ```
 
 A more complex example with all variables
 ```yml
 ---
 # site.yml
-roles:
-  - role: EHER.duplicity_backup
-    eher_duplicity_backup_root: /home
-    eher_duplicity_backup_include_list: [ "/home/eher/", "/home/git/" ]
-    eher_duplicity_backup_exclude_list: [ "/home/vagrant/" ]
-    eher_duplicity_backup_destination: "s3://s3.amazonaws.com/my_backup_bucket/{{ ansible_hostname }}/"
-    eher_duplicity_backup_aws_key: "{{ backup_aws_key }}"
-    eher_duplicity_backup_aws_secret: "{{ backup_aws_secret }}"
-    eher_duplicity_backup_time: hourly
-    eher_duplicity_backup_encryption: yes
-    eher_duplicity_backup_passphrase: "NotSecret"
+- hosts: duplicity_backup
+  sudo: yes
+  tags: duplicity_backup
+  roles:
+    - role: EHER.duplicity_backup
+      eher_duplicity_backup_root: /home
+      eher_duplicity_backup_include_list: [ "/home/eher/", "/home/git/" ]
+      eher_duplicity_backup_exclude_list: [ "/home/vagrant/" ]
+      eher_duplicity_backup_destination: "s3://s3.amazonaws.com/my_backup_bucket/{{ ansible_hostname }}/"
+      eher_duplicity_backup_aws_key: "{{ backup_aws_key }}"
+      eher_duplicity_backup_aws_secret: "{{ backup_aws_secret }}"
+      eher_duplicity_backup_time: hourly
+      eher_duplicity_backup_encryption: yes
+      eher_duplicity_backup_passphrase: "NotSecret"
 ```
 
 ## installation
