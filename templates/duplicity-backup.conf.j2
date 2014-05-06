@@ -37,7 +37,7 @@
 # AMAZON S3 INFORMATION
 AWS_ACCESS_KEY_ID="{{ eher_duplicity_backup_aws_key }}"
 AWS_SECRET_ACCESS_KEY="{{ eher_duplicity_backup_aws_secret }}"
-ENCRYPTION="{{ "yes" if eher_duplicity_backup_encryption else "no" }}"
+ENCRYPTION="{{ "yes" if eher_duplicity_backup_encryption|default(False) else "no" }}"
 PASSPHRASE="{{ eher_duplicity_backup_passphrase|default(generated_passphrase) }}"
 ROOT="{{ eher_duplicity_backup_root|default("/") }}"
 DEST="{{ eher_duplicity_backup_destination }}"

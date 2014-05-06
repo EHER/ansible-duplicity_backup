@@ -1,1 +1,1 @@
-generated_passphrase: "{{ lookup('password', '../../credentials/duplicity/generated_passphrase') }}"
+generated_passphrase: "{{ lookup('password', '../../../credentials/duplicity/generated_passphrase') }}"
