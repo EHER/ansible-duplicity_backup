@@ -1,5 +1,5 @@
 # EHER.duplicity_backup
-A role to install, configure and schedule backups via duplicity and duplicity_backup script.
+Ansible role to install, configure and schedule backups via duplicity and duplicity_backup script.
 
 ## variables
 
